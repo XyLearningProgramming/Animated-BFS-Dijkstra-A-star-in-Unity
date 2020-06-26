@@ -14,12 +14,14 @@ When first learned these algorithm, I always want to have a direct and appealing
 Here are some classical scenes I pre-made in the project to show differences between these algorithms.
 
 We can see that A-star is the fastest and it generally explores less grid cells while BFS is going everywhere as it can.
-<br><img src="./imgs/AlgoCompareFullSpeed.gif" alt="" width="500px" height="auto"><br>
-<img src="./imgs/AlgoMountainCompareFullSpeed.gif" alt="" width="500px" height="auto">
+<br><img src="./imgs/AlgoCompareFullSpeed.gif" alt="" width="500px" height="auto">
+<br><img src="./imgs/AlgoMountainCompareFullSpeed.gif" alt="" width="500px" height="auto"><br>
 
 Plasma when exploring new locations:
-<img src="./imgs/Effect.png" alt="" width="500px" height="auto">
+<br><img src="./imgs/Effect.png" alt="" width="500px" height="auto"><br>
 
+Picture of Models
+<br><img src="./imgs/Models.png" alt="" width="300px" height="auto"><br>
 
 ### How to Modify Scenes in Unity
 You can start by copying any of the existing scenes. 
