@@ -12,6 +12,7 @@ public class WayPoint : MonoBehaviour
     [SerializeField] public WayPoint nextWayPoint { get; set; } = null;
 
     [Header("Algorithm")]
+    [SerializeField] bool isCostRandom = false;
     [SerializeField] [Range(1f, 5f)] float cost = 1f;
     [SerializeField] public bool isWall = false;
     [SerializeField] public int h { get; set; } = int.MaxValue;
@@ -42,10 +43,20 @@ public class WayPoint : MonoBehaviour
 
     private void Awake()
     {
+
+    }
+
+    // Start is called before the first frame update
+    void Start()
+    {
         // get position
         Vector3 tarPos = transform.position;
         tarPos.x = Mathf.RoundToInt(tarPos.x);
         tarPos.z = Mathf.RoundToInt(tarPos.z);
+        if (isCostRandom)
+        {
+            cost = UnityEngine.Random.Range(1, 5 + 1); // randomly generate cost
+        }
         // set y based on cost
         if (!isWall)
         {
@@ -69,12 +80,6 @@ public class WayPoint : MonoBehaviour
             transform.position = positionVec;
             SetTopColor(Color.gray);
         }
-    }
-
-    // Start is called before the first frame update
-    void Start()
-    {
-        
     }
 
     // Update is called once per frame

@@ -39,10 +39,37 @@ public class EnemyMovement : MonoBehaviour
 
     IEnumerator FollowPath(List<WayPoint> path, float moveGap_)
     {
-        Vector3 offset = transform.position - Vector3.zero;
+        Vector3 offset = Vector3.zero;
+        offset.y =  transform.position.y;
         foreach (WayPoint point in path)
         {
-            transform.position = point.GetPostionVec() + offset;
+            Vector3 originalPos = transform.position;
+            Vector3 destPos = point.GetPostionVec();
+            transform.position = destPos + offset;
+
+            //Debug.Log("Dest"+destPos);
+            //Debug.Log("Ori" + originalPos);
+
+            if (destPos.x - originalPos.x < 0)
+            {
+                transform.eulerAngles = new Vector3(0, 180, 0);
+            }
+            else if (destPos.z - originalPos.z < 0)
+            {
+                //Debug.Log("Trying to rotate");
+                transform.eulerAngles = new Vector3(0, 180, 0);
+            }
+            else if (destPos.z - originalPos.z > 0)
+            {
+                //Debug.Log("Trying to rotate");
+                transform.eulerAngles = new Vector3(0, -90, 0);
+            }
+            else
+            {
+                transform.eulerAngles = new Vector3(0, 0, 0);
+            }
+
+
             yield return new WaitForSeconds(moveGap_);
         }
     }

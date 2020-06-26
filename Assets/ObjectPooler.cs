@@ -53,9 +53,9 @@ public class ObjectPooler : MonoBehaviour
     public GameObject SpawnFromPool(string tag, Vector3 position, Quaternion rotation)
     {
         if (!poolDict.ContainsKey(tag)) return null;
-        GameObject obj = poolDict[tag].Peek();
+        GameObject obj = null;
 
-        if (obj!=null && !obj.activeSelf)
+        if (poolDict[tag].Count>0)
         {
             obj = poolDict[tag].Dequeue();
             obj.SetActive(true);
@@ -65,7 +65,16 @@ public class ObjectPooler : MonoBehaviour
         else 
         {
             // not enough in pool then 
-            obj = Instantiate(poolDict[tag].Peek(),position,rotation, transform);
+            GameObject prefab = null;
+            foreach (Pool pool in pools)
+            {
+                if (pool.tag == tag)
+                {
+                    prefab = pool.prefab;
+                }
+            }
+
+            obj = Instantiate(prefab, position,rotation, transform);
         }
 
         return obj;

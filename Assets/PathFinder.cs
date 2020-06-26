@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using TMPro;
 using UnityEditorInternal;
 using UnityEngine;
 
@@ -22,8 +23,25 @@ public class PathFinder : MonoBehaviour
     enum Algorithm {BFS, Dijk, Astar }
     [SerializeField] Algorithm algo = Algorithm.BFS;
 
+    [SerializeField] bool executeWaitForKeyDown = false;
+    [SerializeField][Tooltip("See Unity Keycode Enum to confirm changes")] string keyEnum = "Space";
+
+    [Header("VFX")]
+    [SerializeField] bool turnOnPlasmaEffect = true;
+    [SerializeField] float plasmaEffectExistingTime = 2f;
+    [SerializeField] GameObject whiteBG;
+
     public const string endGate = "EndGate"; // call prefab
-    public const string startGate = "StartGate"; 
+    public const string startGate = "StartGate";
+    public const string resultDisplayObjName = "ResultDisplay";
+
+    // measure time
+    [Header("Timing")]
+    public bool isTiming = true;
+    public float timeElapsed;
+
+    // result display
+    TextMeshProUGUI resultDisplay;
 
     Dictionary<Vector2Int, WayPoint> grid = new Dictionary<Vector2Int, WayPoint>();
     Vector2Int[] directions =
@@ -55,6 +73,18 @@ public class PathFinder : MonoBehaviour
             StartCoroutine(Dijkstra());
         else if (algo==Algorithm.Astar)
             StartCoroutine(AStar());
+
+        // cache result display component
+        resultDisplay = GameObject.Find(resultDisplayObjName).GetComponent<TextMeshProUGUI>();
+        if (!resultDisplay)
+            Debug.Log("No where to show result on screen!");
+
+        resultDisplay.text = "";
+
+        if (!whiteBG)
+        {
+            Debug.Log("Find ResultUI and link the image!");
+        }
     }
 
     IEnumerator BFS()
@@ -66,6 +96,12 @@ public class PathFinder : MonoBehaviour
         {
             curWayPoint = queue.Dequeue();
             curWayPoint.SetExplored(exploredColor);
+
+            //VFX
+            if (turnOnPlasmaEffect)
+            {
+                CallLighteningEffect(curWayPoint);
+            }
 
             foreach (Vector2Int direction in directions)
             {
@@ -94,13 +130,29 @@ public class PathFinder : MonoBehaviour
                     }
                 }
             }
+            // wait for input 
             //Debug.Log(queue.Count);
             if (executePerFrame)
                 yield return new WaitForEndOfFrame();
+            else if (executeWaitForKeyDown)
+            {
+                KeyCode tryParse;
+                try
+                {
+                    tryParse = (KeyCode)Enum.Parse(typeof(KeyCode), keyEnum);
+                }
+                catch
+                {
+                    Debug.Log("Key Not Found. See Unity Manual. Space is used");
+                    tryParse = KeyCode.Space;
+                }
+                yield return new WaitUntil(() => Input.GetKeyDown(tryParse));
+            }
             else
                 yield return new WaitForSeconds(stepPerSecond);
         }
         // the destination is inaccessable
+        resultDisplay.text += "Not reachable!\n";
         Debug.Log("Not reachable!");
         yield break;
     }
@@ -126,12 +178,19 @@ public class PathFinder : MonoBehaviour
             if (exploring == null)
             {
                 // wall is blocking the map
+                resultDisplay.text += "Not reachable!\n";
                 Debug.Log("Not reachable!");
                 yield break;
             }
 
             // add to explored List
             exploring.SetExplored(exploredColor);
+
+            //VFX
+            if (turnOnPlasmaEffect)
+            {
+                CallLighteningEffect(exploring);
+            }
 
             foreach (Vector2Int direction in directions)
             {
@@ -162,12 +221,27 @@ public class PathFinder : MonoBehaviour
             }
             if (executePerFrame)
                 yield return new WaitForEndOfFrame();
+            else if (executeWaitForKeyDown)
+            {
+                KeyCode tryParse;
+                try
+                {
+                    tryParse = (KeyCode)Enum.Parse(typeof(KeyCode), keyEnum);
+                }
+                catch
+                {
+                    Debug.Log("Key Not Found. See Unity Manual. Space is used");
+                    tryParse = KeyCode.Space;
+                }
+                yield return new WaitUntil(() => Input.GetKeyDown(tryParse));
+            }
             else
                 yield return new WaitForSeconds(stepPerSecond);
                     
                     
         }
         // the destination is inaccessable
+        resultDisplay.text += "Not reachable!\n";
         Debug.Log("Not reachable!");
         yield break;
     }
@@ -226,6 +300,11 @@ public class PathFinder : MonoBehaviour
             }
 
             origin.SetExplored(exploredColor); // remove from open list add to explored
+                                               //VFX
+            if (turnOnPlasmaEffect)
+            {
+                CallLighteningEffect(origin);
+            }
 
             // explore neighbors
             foreach (Vector2Int direction in directions)
@@ -266,11 +345,26 @@ public class PathFinder : MonoBehaviour
             }
             if (executePerFrame)
                 yield return new WaitForEndOfFrame();
+            else if (executeWaitForKeyDown)
+            {
+                KeyCode tryParse;
+                try
+                {
+                    tryParse = (KeyCode)Enum.Parse(typeof(KeyCode), keyEnum);
+                }
+                catch
+                {
+                    Debug.Log("Key Not Found. See Unity Manual. Space is used");
+                    tryParse = KeyCode.Space;
+                }
+                    yield return new WaitUntil(() => Input.GetKeyDown(tryParse));
+            }
             else
                 yield return new WaitForSeconds(stepPerSecond);
         }
 
         // no exit in the map
+        resultDisplay.text = "Not reachable!\n";
         Debug.Log("Not reachable!");
         yield break;
     }
@@ -300,15 +394,49 @@ public class PathFinder : MonoBehaviour
         return res;
     }
 
+    public const string plasmaPrefab = "LightingEffect";
+    public void CallLighteningEffect(WayPoint dest)
+    {
+        GameObject obj= ObjectPooler.instance.SpawnFromPool(plasmaPrefab, dest.GetPostionVec(), Quaternion.identity);
+        StartCoroutine(RecyclePlasma(obj));
+    }
+
+    IEnumerator RecyclePlasma(GameObject obj)
+    {
+        yield return new WaitForSeconds(plasmaEffectExistingTime);
+        ObjectPooler.instance.ReinsertToPool(plasmaPrefab, obj);
+    }
 
     private void AfterFindTheDestination(WayPoint exploring)
     {
         // Found it!
+        isTiming = false;
+
         Debug.Log("Found it!");
         int totalCost = ConstructPathToList(exploring);
         Debug.Log("Cost: " + totalCost.ToString());
+
+        // format output
+        string tmp = "";
+        tmp = "Algorithm Used: "+ algo.ToString() + "\n";
+        tmp += "Cost: " + totalCost.ToString()+"\n";
+        tmp+= "Time Elapsed: "+ FormatTime(timeElapsed)+"\n";
+
+        if (whiteBG && !whiteBG.activeSelf)
+            whiteBG.SetActive(true);
+
+        resultDisplay.text += tmp;
+
         DecorateThePath();
         MoveAlongPath();
+    }
+
+    public string FormatTime(float time)
+    {
+        int minutes = (int)time / 60;
+        int seconds = (int)time - 60 * minutes;
+        int milliseconds = (int)(1000 * (time - minutes * 60 - seconds));
+        return string.Format("{0:00}:{1:00}:{2:000}", minutes, seconds, milliseconds);
     }
 
     private void MoveAlongPath()
@@ -375,6 +503,7 @@ public class PathFinder : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        
+        if (isTiming)
+            timeElapsed += Time.deltaTime;
     }
 }
