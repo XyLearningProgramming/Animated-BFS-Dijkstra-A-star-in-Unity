@@ -4,6 +4,7 @@
 
 ### Description
 This is a Unity project that animates three common pathfinding algorithm: **BFS, Dijkstra, and A-star**. 
+<br><img src="./imgs/Small.gif" alt="" width="400px" height="auto"><br>
 
 It uses different models (house, tent, train tracks, gate) and visual effects (plasma) to visualize the pathfinding process.
 
