@@ -10,7 +10,7 @@ It uses different models (house, tent, train tracks, gate) and visual effects (p
 
 The pathfinding begins with a glowing start gate. Higher ground means larger cost to get there. All cells are covered with forest. Exploration team builds tents when they first reaches a cell ("open-list"). Then cell already explored are filled with house ("close-list"). Finally, rail tracks is built on the best path found and our train goes to the destination glowing red light.
 
-When first learned these algorithm, I always want to have a direct and appealing visualization of them. Today, I did that myself. Anyone is welcome to download and play with it in Unity.
+When first learned these algorithm, I always want to have a direct and appealing visualization of them, which I found rare. So I made one. Anyone is welcome to download and play with it in Unity.
 
 Here are some classical scenes I pre-made in the project to show differences between these algorithms.
 
@@ -29,7 +29,7 @@ You can start by copying any of the existing scenes.
 
 Each grid cell automatically snap to grid even in edit mode. `cost` indicates how many efforts it takes from four directions to this cell. `Cost Random` will randomize its cost and `IsWall` will make this cell inaccessible no matter what.
 
-For each path-finding agent prefab `Enemy`, we need to set `Board For Search`, `Start Way Point`, `End Way Point`. `Execute Per Frame` means the algorithm put one cell in closed-list each frame no matter what. If not chosen, the agent wait `Step per second` for each step. If `Execute Wait For Key` is set true, all agents wait for the key input in `Key Enum`. You can turn on and off plasma effect in `VFX` at your will.  
+For each path-finding agent prefab `Enemy`, we need to set `Board For Search`, `Start Way Point`, `End Way Point`. `Execute Per Frame` means the algorithm put one cell in closed-list each frame no matter what. If not chosen, the agent wait `Step per second` for each step. If `Execute Wait For Key` is set true, all agents wait for the key input in `Key Enum`. You can turn on and off plasma effect in `VFX` at your wish.  
 
 All models are extracted from ObjectPooler. If it runs super slow, you can consider: 1. cancelling spawning these models from pool; 2. modify pool parameters to pre-make more objects.
 
